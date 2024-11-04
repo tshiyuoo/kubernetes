@@ -61,7 +61,7 @@ func (m *kubeGenericRuntimeManager) generateLinuxContainerConfig(container *v1.C
 	}
 	lc := &runtimeapi.LinuxContainerConfig{
 		Resources: &runtimeapi.LinuxContainerResources{
-			Unified: make(map[string]string{}),
+			Unified: make(map[string]string),
 		},
 		SecurityContext: sc,
 	}
@@ -136,14 +136,18 @@ func (m *kubeGenericRuntimeManager) generateLinuxContainerConfig(container *v1.C
 
 	if pod.Annotations != nil {
 		priority, ok := pod.Annotations["disk.kubernetes.io/io-priority"]
-		switch priority {
-		case "low":
-			lc.Resources.Unified["io.weight"] = "default 196"
-		case "mid":
-			lc.Resources.Unified["io.weight"] = "default 596"
-		case "high":
-			lc.Resources.Unified["io.weight"] = "default 996"
+		if ok {
+			switch priority {
+			case "low":
+				lc.Resources.Unified["io.weight"] = "default 196"
+			case "mid":
+				lc.Resources.Unified["io.weight"] = "default 596"
+			case "high":
+				lc.Resources.Unified["io.weight"] = "default 996"
+			}
+			klog.V(4).InfoS("IO Setting for container", "containerName", "unified", lc.Resources.Unified)
 		}
+
 	}
 
 	return lc, nil
