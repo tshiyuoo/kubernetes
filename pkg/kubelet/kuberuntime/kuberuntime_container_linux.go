@@ -60,7 +60,9 @@ func (m *kubeGenericRuntimeManager) generateLinuxContainerConfig(container *v1.C
 		return nil, err
 	}
 	lc := &runtimeapi.LinuxContainerConfig{
-		Resources:       &runtimeapi.LinuxContainerResources{},
+		Resources: &runtimeapi.LinuxContainerResources{
+			Unified: make(map[string]string{}),
+		},
 		SecurityContext: sc,
 	}
 
@@ -129,6 +131,18 @@ func (m *kubeGenericRuntimeManager) generateLinuxContainerConfig(container *v1.C
 				}
 			}
 			klog.V(4).InfoS("MemoryQoS config for container", "pod", klog.KObj(pod), "containerName", container.Name, "unified", unified)
+		}
+	}
+
+	if pod.Annotations != nil {
+		priority, ok := pod.Annotations["disk.kubernetes.io/io-priority"]
+		switch priority {
+		case "low":
+			lc.Resources.Unified["io.weight"] = "default 196"
+		case "mid":
+			lc.Resources.Unified["io.weight"] = "default 596"
+		case "high":
+			lc.Resources.Unified["io.weight"] = "default 996"
 		}
 	}
 
