@@ -134,6 +134,7 @@ func (m *kubeGenericRuntimeManager) generateLinuxContainerConfig(container *v1.C
 		}
 	}
 
+	klog.V(4).InfoS("IOSetting: begin setting io weight")
 	if pod.Annotations != nil {
 		priority, ok := pod.Annotations["disk.kubernetes.io/io-priority"]
 		if ok {
@@ -145,7 +146,7 @@ func (m *kubeGenericRuntimeManager) generateLinuxContainerConfig(container *v1.C
 			case "high":
 				lc.Resources.Unified["io.weight"] = "default 996"
 			}
-			klog.V(4).InfoS("IO Setting for container", "containerName", "unified", lc.Resources.Unified)
+			klog.V(4).InfoS("IO Setting for container", "unified", lc.Resources.Unified)
 		}
 
 	}
